@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectId" id="1iR1EUv2SEpcWARdf7qhVLeOlBv" />
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager">
+    <configuration name="BigdataProjApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="bigdata_proj" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.neu.info7255.bigdata_proj.BigdataProjApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+</project>
