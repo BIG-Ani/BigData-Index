@@ -57,11 +57,19 @@ public class PlanController {
                 "; id - " + id);
 
         String intervalKey = object + "_objectId_" + id;
+
+        // TODO leichenzhou: add try catch targetException - 10/4/20
+//        try {
+//            String foundValue1 = redisService.read(intervalKey);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Object not found");
+//        }
+
         String foundValue = redisService.read(intervalKey);
         if (foundValue == null) {
             logger.info("OBJECT NOT FOUND - " + intervalKey);
 
-            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         } else {
             logger.info("OBJECT FOUND - " + intervalKey);
 
@@ -80,7 +88,7 @@ public class PlanController {
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteByKey(@PathVariable String object,
-                               @PathVariable String id) {
+                                              @PathVariable String id) {
         logger.info("DELETING OBJECT: " + object + ", id - " + id);
 
         String intervalKey = object + "_objectId_" + id;
