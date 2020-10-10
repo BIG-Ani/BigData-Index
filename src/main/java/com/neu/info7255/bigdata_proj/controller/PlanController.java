@@ -4,15 +4,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neu.info7255.bigdata_proj.service.RedisServiceImp;
+import com.neu.info7255.bigdata_proj.util.MessageDigestGenerator;
+import com.neu.info7255.bigdata_proj.util.MessageUtil;
 import com.neu.info7255.bigdata_proj.validator.SchemaValidator;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.tags.form.SelectTag;
+
+import java.security.MessageDigest;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping(value = "/plan/v1")
@@ -30,8 +38,9 @@ public class PlanController {
                                          @RequestBody String reqJson,
                                          HttpEntity<String> req) {
 
-        // schema validation
         SchemaValidator planSchema = new SchemaValidator();
+
+        logger.info("REQUEST BODY:" + req.getBody());
 
         try {
             logger.info(reqJson);
@@ -43,6 +52,7 @@ public class PlanController {
         }
 
         JSONObject jsonObject = new JSONObject(reqJson);
+
         String internalKey = object + "_objectId_" + jsonObject.getString("objectId");
         redisService.create(internalKey, jsonObject.toString());
 
@@ -52,38 +62,41 @@ public class PlanController {
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.GET)
     public ResponseEntity<String> readByKey(@PathVariable String object,
-                                            @PathVariable String id) {
+                                            @PathVariable String id,
+                                            WebRequest webRequest) {
         logger.info("RETRIEVING REDIS DATA: " + "object - " + object +
                 "; id - " + id);
 
         String intervalKey = object + "_objectId_" + id;
 
-        // TODO leichenzhou: add try catch targetException - 10/4/20
-//        try {
-//            String foundValue1 = redisService.read(intervalKey);
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body("Object not found");
-//        }
-
-        String foundValue = redisService.read(intervalKey);
-        if (foundValue == null) {
+        String foundValue;
+        try {
+            foundValue = redisService.read(intervalKey);
+        } catch (Exception e) {
             logger.info("OBJECT NOT FOUND - " + intervalKey);
-
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        } else {
-            logger.info("OBJECT FOUND - " + intervalKey);
-
-            try {
-                JsonNode jsonNode = objectMapper.readTree(foundValue);
-
-                foundValue = jsonNode.toString();
-                return ResponseEntity.ok().body(foundValue);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.badRequest().body("Object not found");
         }
+
+        if (webRequest.checkNotModified(webRequest.getHeader("If-None-Match"))) {
+            logger.info("CACHING AVAILABLE: " + intervalKey);
+            return new ResponseEntity<>("{}", HttpStatus.NOT_MODIFIED);
+        }
+
+        logger.info("OBJECT FOUND - " + intervalKey);
+        try {
+            JsonNode jsonNode = objectMapper.readTree(foundValue);
+
+            foundValue = jsonNode.toString();
+            return ResponseEntity
+                    .ok()
+                    .eTag(MessageDigestGenerator.getSequence("MD5", intervalKey))
+                    .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS))
+                    .body(foundValue);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.DELETE)
@@ -95,7 +108,7 @@ public class PlanController {
 
         boolean deleteRes = redisService.delete(intervalKey);
         if (deleteRes) {
-            return new ResponseEntity<>("{\"message\": \"Deleted\"}", HttpStatus.OK);
+            return new ResponseEntity<>("{\"message\":" + "\"" + intervalKey + " Deleted\"}", HttpStatus.OK);
         } else {
             return new ResponseEntity<>(" {\"message\": \"item not found\" }", HttpStatus.NOT_FOUND);
         }
