@@ -182,6 +182,12 @@ public class PlanService implements RedisService {
         Set<String> keys = redisDao.keys(objectKey + "*");
 
         keys.forEach((key) -> {
+            // DEBUG leichenzhou - 11/7/20 bug (1)"membercostshare_1234512xvc1314sdfsd-506da" (2) "membercostshare_1234512xvc1314sdfsd-506"
+            // will have operation error with objectKey(membercostshare_1234512xvc1314sdfsd-506), due to pattern reg
+
+            if (key.length() > objectKey.length() && key.substring(objectKey.length()).indexOf(SPLITTER_UNDER_SLASH) == -1) {
+                return;
+            }
 
             // process key : value
             if (key.equals(objectKey)) {
@@ -232,7 +238,7 @@ public class PlanService implements RedisService {
                     if (delete) {
                         redisDao.deleteKey(key);
                     } else {
-                        map.put(key, objectList);
+                        map.put(subKey, objectList);
                     }
                 } else {
                     // process nested object
