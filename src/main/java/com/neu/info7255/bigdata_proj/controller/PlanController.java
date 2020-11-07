@@ -1,11 +1,9 @@
 package com.neu.info7255.bigdata_proj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neu.info7255.bigdata_proj.service.AuthorizationService;
 import com.neu.info7255.bigdata_proj.service.PlanService;
-import com.neu.info7255.bigdata_proj.util.MessageDigestGenerator;
 import com.neu.info7255.bigdata_proj.validator.SchemaValidator;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -18,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
-import java.nio.file.LinkOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +81,7 @@ public class PlanController {
     // PATCH PLAN
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<String> patchPlan(@RequestHeader("authorization") String idToken,
-                                             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+                                             @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                              @PathVariable String object,
                                              @PathVariable String id,
                                              @RequestBody String patchPlan) {
@@ -111,7 +108,7 @@ public class PlanController {
         // etag check
         String planEtag = planService.getEtag(intervalKey, "eTag");
 
-        if (ifNoneMatch != null && !ifNoneMatch.equals(planEtag)) {
+        if (ifMatch != null && !ifMatch.equals(planEtag)) {
             logger.info("PATCH PLAN CONFLICT");
 
             return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
@@ -129,7 +126,7 @@ public class PlanController {
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.PUT)
     public ResponseEntity<String> updatePlan(@RequestHeader("authorization") String idToken,
-                                             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+                                             @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                              @PathVariable String object,
                                              @PathVariable String id,
                                              @RequestBody String putPlan) {
@@ -171,7 +168,7 @@ public class PlanController {
         // check etag
         String planEtag = planService.getEtag(intervalKey, "eTag");
 
-        if (ifNoneMatch != null && !ifNoneMatch.equals(planEtag)) {
+        if (ifMatch != null && !ifMatch.equals(planEtag)) {
             logger.info("PUT PLAN CONFLICT");
 
             return ResponseEntity
