@@ -1,9 +1,10 @@
 package com.neu.info7255.bigdata_proj.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Stack;
 
 public class MessageDigestGenerator {
 
@@ -12,6 +13,11 @@ public class MessageDigestGenerator {
     public static String MD5_ALGORITHM = "MD5";
     private static MessageDigest messageDigest = null;
 
+    public static String md5Gen(String sources) {
+        String md5Hex = DigestUtils.md5Hex(sources).toUpperCase();
+
+        return md5Hex;
+    }
 
     public static String getSequence(String type, String source) {
         String encodeSeq = "";

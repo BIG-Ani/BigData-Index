@@ -58,7 +58,10 @@ public class PlanService implements RedisService {
         String nodeMapStr = new JSONObject(objectMap).toString();
 
         // set new etag
-        String newEtag = MessageDigestGenerator.getSequence(MessageDigestGenerator.MD5_ALGORITHM, key);
+//        String newEtag = MessageDigestGenerator.getSequence(MessageDigestGenerator.MD5_ALGORITHM, key);
+
+        String newEtag = MessageDigestGenerator.md5Gen(key);
+
         redisDao.hSet(key, "eTag", newEtag);
 
         return newEtag;
