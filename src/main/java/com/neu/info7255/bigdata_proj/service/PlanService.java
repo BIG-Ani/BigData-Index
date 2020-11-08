@@ -1,6 +1,5 @@
 package com.neu.info7255.bigdata_proj.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neu.info7255.bigdata_proj.dao.RedisDao;
 import com.neu.info7255.bigdata_proj.util.MessageDigestGenerator;
 import org.json.JSONArray;
@@ -20,8 +19,6 @@ public class PlanService implements RedisService {
 
     @Autowired
     private RedisDao redisDao;
-
-    private static ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void create(String key, String value) {
@@ -55,7 +52,6 @@ public class PlanService implements RedisService {
     public String savePlan(String key, JSONObject object) {
         // save plan
         Map<String, Object> objectMap = nestStore(key, object);
-        String nodeMapStr = new JSONObject(objectMap).toString();
 
         // set new etag
 //        String newEtag = MessageDigestGenerator.getSequence(MessageDigestGenerator.MD5_ALGORITHM, key);
