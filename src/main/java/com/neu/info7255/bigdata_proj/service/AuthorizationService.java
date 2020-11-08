@@ -3,7 +3,6 @@ package com.neu.info7255.bigdata_proj.service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.apache.ApacheHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +15,7 @@ public class AuthorizationService {
     private static final JacksonFactory jacksonFactory = new JacksonFactory();
 
     // google.client-id
+    // TODO leichenzhou - 11/7/20: change to your own google secret id
     private String GOOGLE_CLIENT_ID = "232746207217-g92g9ik894s20or6qve0klgormhaph07.apps.googleusercontent.com";
 
     GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new ApacheHttpTransport(), jacksonFactory)

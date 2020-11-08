@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="e2a44d29-203a-4bbb-b3bd-049a63ce6833" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/controller/PlanController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/controller/PlanController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/service/PlanService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/service/PlanService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/neu/info7255/bigdata_proj/controller/PlanController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/neu/info7255/bigdata_proj/controller/PlanController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/neu/info7255/bigdata_proj/service/PlanService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/neu/info7255/bigdata_proj/service/PlanService.class" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,6 +21,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -76,6 +74,9 @@
       </method>
     </configuration>
   </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e2a44d29-203a-4bbb-b3bd-049a63ce6833" name="Default Changelist" comment="" />
@@ -104,7 +105,8 @@
       <workItem from="1604510153371" duration="13850000" />
       <workItem from="1604596272548" duration="18090000" />
       <workItem from="1604682804636" duration="27693000" />
-      <workItem from="1604769394574" duration="6529000" />
+      <workItem from="1604769394574" duration="6877000" />
+      <workItem from="1604803869941" duration="8532000" />
     </task>
     <servers />
   </component>
@@ -123,16 +125,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/service/PlanService.java</url>
-          <line>157</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

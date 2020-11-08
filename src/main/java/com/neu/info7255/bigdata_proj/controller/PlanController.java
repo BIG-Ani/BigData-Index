@@ -2,21 +2,20 @@ package com.neu.info7255.bigdata_proj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.neu.info7255.bigdata_proj.constant.MessageEnum;
 import com.neu.info7255.bigdata_proj.service.AuthorizationService;
 import com.neu.info7255.bigdata_proj.service.PlanService;
+import com.neu.info7255.bigdata_proj.util.MessageUtil;
 import com.neu.info7255.bigdata_proj.validator.SchemaValidator;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +38,7 @@ public class PlanController {
     @RequestMapping(value = "/{object}", method = RequestMethod.POST)
     public ResponseEntity<String> create(@RequestHeader("Authorization") String idToken,
                                          @PathVariable String object,
-                                         @RequestBody String reqJson,
-                                         HttpEntity<String> req) {
+                                         @RequestBody String reqJson) {
 
         logger.info("GOOGLE-ID_TOKEN:" + idToken);
 
@@ -48,7 +46,8 @@ public class PlanController {
         if (!authorizationService.authorize(idToken.substring(7))) {
             logger.error("TOKEN AUTHORIZATION - google token expired");
 
-            return new ResponseEntity<>(" {\"message\": \"invalid token\" }", HttpStatus.BAD_REQUEST);
+            String message = MessageUtil.build(MessageEnum.AUTHORIZATION_ERROR);
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         logger.info("TOKEN AUTHORIZATION SUCCESSFUL");
@@ -61,26 +60,36 @@ public class PlanController {
         } catch (Exception e) {
             logger.info("VALIDATING ERROR: SCHEMA NOT MATCH - " + e.getMessage());
 
-            return ResponseEntity.badRequest().body(e.getMessage());
+            String message = MessageUtil.build(MessageEnum.VALIDATION_ERROR, e.getMessage());
+
+            return ResponseEntity.badRequest().body(message);
         }
 
         String internalKey = object + "_" + newPlan.getString("objectId");
 
         // check exist
         if (planService.hasKey(internalKey)) {
-            return new ResponseEntity<>(new JSONObject().put("message", "item exist").toString(), HttpStatus.CONFLICT);
+
+            String message = MessageUtil.build(MessageEnum.CONFLICT_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         }
 
         logger.info("CREATING NEW DATA: key - " + internalKey + ": " + newPlan.toString());
         planService.savePlan(internalKey, newPlan);
 
-        String res = "{ObjectId: " + newPlan.get("objectId") + ", ObjectType: " + newPlan.get("objectType") + "}";
-        return ResponseEntity.ok().body(new JSONObject(res).toString());
+        String message = MessageUtil
+                .build(
+                        MessageEnum.SAVE_SUCCESS,
+                        newPlan.get("objectType") + "_" + newPlan.get("objectId") + " saved");
+
+        return ResponseEntity
+                .ok()
+                .body(message);
     }
 
-    // PATCH PLAN
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.PATCH)
-    public ResponseEntity<String> patchPlan(@RequestHeader("authorization") String idToken,
+    public ResponseEntity<String> patchPlan(@RequestHeader(value = "authorization", required = false) String idToken,
                                              @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                              @PathVariable String object,
                                              @PathVariable String id,
@@ -91,29 +100,44 @@ public class PlanController {
         // check authorization
         if (!authorizationService.authorize(idToken.substring(7))) {
             logger.error("TOKEN AUTHORIZATION - google token expired");
-            return new ResponseEntity<>(" {\"message\": \"invalid token\" }", HttpStatus.BAD_REQUEST);
+
+            String message = MessageUtil.build(MessageEnum.AUTHORIZATION_ERROR);
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         logger.info("TOKEN AUTHORIZATION SUCCESSFUL");
 
-        // check plan exist
         String intervalKey = object + "_" + id;
-
-        if (!planService.hasKey(intervalKey)) {
-            logger.info("PATCH PLAN: " + intervalKey + " does not exist");
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new JSONObject().put("Message", "ObjectId does not exist").toString());
-        }
 
         // etag check
         String planEtag = planService.getEtag(intervalKey, "eTag");
 
-        if (ifMatch != null && !ifMatch.equals(planEtag)) {
-            logger.info("PATCH PLAN CONFLICT");
+        if (ifMatch == null) {
+            logger.info("HEADER DOES NOT HAVE IF_MATCH");
 
-            return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
+            String message = MessageUtil.build(MessageEnum.IF_MATCH_MISSING_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.PRECONDITION_REQUIRED);
         }
 
+        if (!ifMatch.equals(planEtag)) {
+            logger.info("PATCH PLAN CONFLICT");
+
+            String message = MessageUtil.build(MessageEnum.IF_MATCH_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.PRECONDITION_FAILED);
+        }
+
+        // check plan exist
+        if (!planService.hasKey(intervalKey)) {
+            logger.info("PATCH PLAN: " + intervalKey + " does not exist");
+
+            String message = MessageUtil.build(MessageEnum.NOT_FOUND_ERROR);
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(message);
+        }
 
         // update plan
         JSONObject patchPlanJson = new JSONObject(patchPlan);
@@ -121,11 +145,16 @@ public class PlanController {
         planService.update(intervalKey, patchPlanJson);
         logger.info("PATCH PLAN : " + intervalKey + " updates successfully");
 
-        return ResponseEntity.ok().eTag(planEtag).body(new JSONObject().put("Message ", "Updated successfully").toString());
+        String message = MessageUtil.build(MessageEnum.PATCH_SUCCESS);
+
+        return ResponseEntity
+                .ok()
+                .eTag(planEtag)
+                .body(message);
     }
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<String> updatePlan(@RequestHeader("authorization") String idToken,
+    public ResponseEntity<String> updatePlan(@RequestHeader(value = "authorization", required = false) String idToken,
                                              @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                              @PathVariable String object,
                                              @PathVariable String id,
@@ -136,7 +165,8 @@ public class PlanController {
         if (!authorizationService.authorize(idToken.substring(7))) {
             logger.error("TOKEN AUTHORIZATION - google token expired");
 
-            return new ResponseEntity<>(" {\"message\": \"invalid token\" }", HttpStatus.BAD_REQUEST);
+            String message = MessageUtil.build(MessageEnum.AUTHORIZATION_ERROR);
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         logger.info("TOKEN AUTHORIZATION SUCCESSFUL");
@@ -153,30 +183,40 @@ public class PlanController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
-        // check plan exist
         String intervalKey = object + "_" + id;
-
-        if (!planService.hasKey(intervalKey)) {
-            logger.info("PUT PLAN: " + intervalKey + " does not exist");
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new JSONObject()
-                            .put("Message", "ObjectId does not exist")
-                            .toString());
-        }
 
         // check etag
         String planEtag = planService.getEtag(intervalKey, "eTag");
 
-        if (ifMatch != null && !ifMatch.equals(planEtag)) {
+        if (ifMatch == null) {
+            logger.info("HEADER DOES NOT HAVE IF_MATCH");
+
+            String message = MessageUtil.build(MessageEnum.IF_MATCH_MISSING_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.PRECONDITION_REQUIRED);
+        }
+
+        if (!ifMatch.equals(planEtag)) {
             logger.info("PUT PLAN CONFLICT");
+
+            String message = MessageUtil.build(MessageEnum.IF_MATCH_ERROR);
 
             return ResponseEntity
                     .status(HttpStatus.PRECONDITION_FAILED)
                     .eTag(planEtag)
-                    .build();
+                    .body(message);
         }
 
+        // check plan exist
+        if (!planService.hasKey(intervalKey)) {
+            logger.info("PUT PLAN: " + intervalKey + " does not exist");
+
+            String message = MessageUtil.build(MessageEnum.NOT_FOUND_ERROR);
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(message);
+        }
 
         // delete old plan
         planService.deletePlan(intervalKey);
@@ -187,22 +227,19 @@ public class PlanController {
         planService.savePlan(intervalKey, putPlanJson);
         logger.info("PUT PLAN: " + intervalKey + " updates successfully");
 
+        String message = MessageUtil.build(MessageEnum.PUT_SUCCESS);
+
         return ResponseEntity
                 .ok()
                 .eTag(planEtag)
-                .body(
-                        new JSONObject()
-                                .put("Message ", "Updated successfully")
-                                .toString()
-                );
+                .body(message);
     }
 
     @RequestMapping(value = "/{object}/{id}", method = RequestMethod.GET)
     public ResponseEntity<String> readByKey(@RequestHeader(value = "Authorization", required = false) String idToken,
                                             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
                                             @PathVariable String object,
-                                            @PathVariable String id,
-                                            WebRequest webRequest) {
+                                            @PathVariable String id) {
 
         logger.info("RETRIEVING REDIS DATA: " + "object - " + object +
                 "; id - " + id);
@@ -214,7 +251,9 @@ public class PlanController {
 
         if (!authorizationService.authorize(idToken.substring(7))) {
             logger.error("TOKEN AUTHORIZATION - google token expired");
-            return new ResponseEntity<>(" {\"message\": \"invalid token\" }", HttpStatus.BAD_REQUEST);
+
+            String message = MessageUtil.build(MessageEnum.AUTHORIZATION_ERROR);
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         logger.info("TOKEN AUTHORIZATION SUCCESSFUL");
@@ -222,10 +261,12 @@ public class PlanController {
         if (!planService.hasKey(internalKey)) {
             logger.info("OBJECT NOT FOUND - " + internalKey);
 
-            return new ResponseEntity<>(" {\"message\": \"item not found\" }", HttpStatus.NOT_FOUND);
+            String message = MessageUtil.build(MessageEnum.NOT_FOUND_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
 
-        Map<String, Object> foundValue = new HashMap<>();
+        Map<String, Object> foundValue;
         foundValue = planService.getPlan(internalKey);
 
         // e-tag
@@ -233,7 +274,10 @@ public class PlanController {
 
         if (objectEtag.equals(ifNoneMatch)) {
             logger.info("CACHING AVAILABLE: " + internalKey);
-            return new ResponseEntity<>("{}", HttpStatus.NOT_MODIFIED);
+
+            String message = MessageUtil.build(MessageEnum.IF_MATCH_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.NOT_MODIFIED);
         }
 
         logger.info("OBJECT FOUND - " + internalKey);
@@ -266,7 +310,9 @@ public class PlanController {
 
         if (!authorizationService.authorize(idToken.substring(7))) {
             logger.error("TOKEN AUTHORIZATION - google token expired");
-            return new ResponseEntity<>(" {\"message\": \"invalid token\" }", HttpStatus.BAD_REQUEST);
+
+            String message = MessageUtil.build(MessageEnum.AUTHORIZATION_ERROR);
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         logger.info("TOKEN AUTHORIZATION SUCCESSFUL");
@@ -274,13 +320,16 @@ public class PlanController {
         String intervalKey = object + "_" + id;
 
         if (!planService.hasKey(intervalKey)) {
-            return new ResponseEntity<>(" {\"message\": \"item not found\" }", HttpStatus.NOT_FOUND);
+            String message = MessageUtil.build(MessageEnum.NOT_FOUND_ERROR);
+
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
 
         planService.deletePlan(intervalKey);
         logger.info("DELETED SUCCESSFULLY: " + object + "_" + intervalKey);
 
-        return new ResponseEntity<>("{\"message\":" + "\"" + intervalKey + " Deleted\"}", HttpStatus.OK);
+        String message = MessageUtil.build(MessageEnum.DELETE_SUCCESS);
+        return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
 }
