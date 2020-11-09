@@ -4,6 +4,14 @@
 
 ![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v2.0-pasing-bri)
 
+
+
+### Final System Architecture Diagram
+
+![Architecture Diagram](diagram.png)
+
+
+
 ### Northeastern University - 2020
 
 repo of INFO-7255 course project
