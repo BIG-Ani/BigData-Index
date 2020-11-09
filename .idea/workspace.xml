@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e2a44d29-203a-4bbb-b3bd-049a63ce6833" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/service/PlanService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/neu/info7255/bigdata_proj/service/PlanService.java" afterDir="false" />
-    </list>
+    <list default="true" id="e2a44d29-203a-4bbb-b3bd-049a63ce6833" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,7 +103,7 @@
       <workItem from="1604596272548" duration="18090000" />
       <workItem from="1604682804636" duration="27693000" />
       <workItem from="1604769394574" duration="6877000" />
-      <workItem from="1604803869941" duration="8532000" />
+      <workItem from="1604803869941" duration="9170000" />
     </task>
     <servers />
   </component>

@@ -1,6 +1,8 @@
 ## Advanced Big Data Applications and Indexing Techniques
 
+![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v1.0-pasing-bri)
 
+![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v2.0-pasing-bri)
 
 ### Northeastern University - 2020
 
