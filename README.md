@@ -6,9 +6,7 @@
 
 
 
-### Final System Architecture Diagram
-
-![Architecture Diagram](diagram.png)
+### [Final System Architecture Diagram](diagram.png)
 
 
 
