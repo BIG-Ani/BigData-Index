@@ -2,6 +2,7 @@ package com.neu.info7255.bigdata_proj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.neu.info7255.bigdata_proj.constant.Constant;
 import com.neu.info7255.bigdata_proj.constant.MessageEnum;
 import com.neu.info7255.bigdata_proj.service.AuthorizationService;
 import com.neu.info7255.bigdata_proj.service.KafkaPub;
@@ -339,13 +340,10 @@ public class PlanController {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
 
-        kafkaPub.publish("delete", id);
+        kafkaPub.publish(Constant.ES_DELETE, id);
 
         planService.deletePlan(intervalKey);
         logger.info("DELETED SUCCESSFULLY: " + object + "_" + intervalKey);
-
-        // TODO leichenzhou - 12/1/20: es delete the index
-//        elasticSearchDao.deletePlanDoc(id);
 
         String message = MessageUtil.build(MessageEnum.DELETE_SUCCESS);
         return new ResponseEntity<>(message, HttpStatus.OK);
