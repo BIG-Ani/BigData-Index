@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neu.info7255.bigdata_proj.constant.MessageEnum;
 import com.neu.info7255.bigdata_proj.service.AuthorizationService;
+import com.neu.info7255.bigdata_proj.service.KafkaPub;
 import com.neu.info7255.bigdata_proj.service.PlanService;
 import com.neu.info7255.bigdata_proj.util.MessageUtil;
 import com.neu.info7255.bigdata_proj.validator.SchemaValidator;
@@ -34,6 +35,12 @@ public class PlanController {
 
     @Autowired
     private AuthorizationService authorizationService;
+
+//    @Autowired
+//    private ElasticSearchDao elasticSearchDao;
+
+    @Autowired
+    private KafkaPub kafkaPub;
 
     @RequestMapping(value = "/{object}", method = RequestMethod.POST)
     public ResponseEntity<String> create(@RequestHeader("Authorization") String idToken,
@@ -77,6 +84,13 @@ public class PlanController {
 
         logger.info("CREATING NEW DATA: key - " + internalKey + ": " + newPlan.toString());
         planService.savePlan(internalKey, newPlan);
+
+
+//        kafkaPub.publish("index", newPlan.toString());
+
+        // TODO leichenzhou - 12/1/20: test the es post function
+        logger.info("CREATING NEW PLAN INDEX: key - " + internalKey + ": " + newPlan.toString());
+//        elasticSearchDao.postPlanDoc(newPlan.getString("objectId"), newPlan);
 
         String message = MessageUtil
                 .build(
@@ -325,8 +339,13 @@ public class PlanController {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
 
+        kafkaPub.publish("delete", id);
+
         planService.deletePlan(intervalKey);
         logger.info("DELETED SUCCESSFULLY: " + object + "_" + intervalKey);
+
+        // TODO leichenzhou - 12/1/20: es delete the index
+//        elasticSearchDao.deletePlanDoc(id);
 
         String message = MessageUtil.build(MessageEnum.DELETE_SUCCESS);
         return new ResponseEntity<>(message, HttpStatus.OK);
