@@ -13,12 +13,18 @@ import java.util.*;
 
 @Service
 public class PlanService implements RedisService {
+
     private static String SPLITTER_UNDER_SLASH = "_";
 
     private static Logger logger = LoggerFactory.getLogger(PlanService.class);
 
+    private Map<String,String> relationMap = new HashMap<>();
+
     @Autowired
     private RedisDao redisDao;
+
+    @Autowired
+    private KafkaPub kafkaPub;
 
     @Override
     public void create(String key, String value) {
@@ -52,6 +58,8 @@ public class PlanService implements RedisService {
     public String savePlan(String key, JSONObject object) {
         // save plan
         Map<String, Object> objectMap = nestStore(key, object);
+
+        indexQueue(object, object.getString("objectId"));
 
         // set new etag
 //        String newEtag = MessageDigestGenerator.getSequence(MessageDigestGenerator.MD5_ALGORITHM, key);
@@ -129,6 +137,70 @@ public class PlanService implements RedisService {
 
         return objMap;
     }
+
+    private void indexQueue(JSONObject jsonObject, String uuid) {
+
+        Map<String, String> simpleMap = new HashMap<>();
+
+        for (Object key : jsonObject.keySet()) {
+            String attributeKey = String.valueOf(key);
+            Object attributeVal = jsonObject.get(String.valueOf(key));
+            String edge = attributeKey;
+
+            if (attributeVal instanceof JSONObject) {
+                JSONObject embdObject = (JSONObject) attributeVal;
+
+                JSONObject joinObj = new JSONObject();
+                if (edge.equals("planserviceCostShares") && embdObject.getString("objectType").equals("membercostshare")) {
+                    joinObj.put("name", "planservice_membercostshare");
+                } else {
+                    joinObj.put("name", embdObject.getString("objectType"));
+                }
+
+                joinObj.put("parent", uuid);
+                embdObject.put("plan_service", joinObj);
+                embdObject.put("parent_id", uuid);
+                System.out.println(embdObject.toString());
+//                    messageQueueService.addToMessageQueue(embdObject.toString(), false);
+                kafkaPub.publish("index", embdObject.toString());
+
+            } else if (attributeVal instanceof JSONArray) {
+
+                JSONArray jsonArray = (JSONArray) attributeVal;
+                Iterator<Object> jsonIterator = jsonArray.iterator();
+
+                while (jsonIterator.hasNext()) {
+                    JSONObject embdObject = (JSONObject) jsonIterator.next();
+                    embdObject.put("parent_id", uuid);
+                    System.out.println(embdObject.toString());
+
+                    String embd_uuid = embdObject.getString("objectId");
+                    relationMap.put(embd_uuid, uuid);
+
+                    indexQueue(embdObject, embd_uuid);
+                }
+
+            } else {
+                simpleMap.put(attributeKey, String.valueOf(attributeVal));
+            }
+        }
+
+        JSONObject joinObj = new JSONObject();
+        joinObj.put("name", simpleMap.get("objectType"));
+
+        if (!simpleMap.containsKey("planType")) {
+            joinObj.put("parent", relationMap.get(uuid));
+        }
+
+        JSONObject obj1 = new JSONObject(simpleMap);
+        obj1.put("plan_service", joinObj);
+        obj1.put("parent_id", relationMap.get(uuid));
+        System.out.println(obj1.toString());
+//            messageQueueService.addToMessageQueue(obj1.toString(), false);
+        kafkaPub.publish("index", obj1.toString());
+
+    }
+
 
     private List<Object> getNodeList(JSONArray attValue) {
 
