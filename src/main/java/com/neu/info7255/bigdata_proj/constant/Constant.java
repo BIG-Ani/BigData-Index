@@ -6,4 +6,8 @@ public class Constant {
 
     public static String TYPE = "_doc";
 
+    public static String ES_POST = "index";
+
+    public static String ES_DELETE = "delete";
+
 }

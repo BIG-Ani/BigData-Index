@@ -1,5 +1,6 @@
 package com.neu.info7255.bigdata_proj.service;
 
+import com.neu.info7255.bigdata_proj.constant.Constant;
 import com.neu.info7255.bigdata_proj.dao.RedisDao;
 import com.neu.info7255.bigdata_proj.util.MessageDigestGenerator;
 import org.json.JSONArray;
@@ -162,7 +163,7 @@ public class PlanService implements RedisService {
                 embdObject.put("parent_id", uuid);
                 System.out.println(embdObject.toString());
 //                    messageQueueService.addToMessageQueue(embdObject.toString(), false);
-                kafkaPub.publish("index", embdObject.toString());
+                kafkaPub.publish(Constant.ES_POST, embdObject.toString());
 
             } else if (attributeVal instanceof JSONArray) {
 
@@ -197,7 +198,7 @@ public class PlanService implements RedisService {
         obj1.put("parent_id", relationMap.get(uuid));
         System.out.println(obj1.toString());
 //            messageQueueService.addToMessageQueue(obj1.toString(), false);
-        kafkaPub.publish("index", obj1.toString());
+        kafkaPub.publish(Constant.ES_POST, obj1.toString());
 
     }
 
