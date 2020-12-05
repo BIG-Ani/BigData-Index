@@ -1,8 +1,8 @@
 ## Advanced Big Data Applications and Indexing Techniques
 
-![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v1.0-pasing-bri)
+![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v1.0-passing-bri)
 
-![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v2.0-pasing-bri)
+![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v2.0-passing-bri)
 
 
 
@@ -104,9 +104,9 @@ listeners=PLAINTEXT://localhost:9092
 ##### kafka command
 
 ```sh
-brew start services kafka
+brew services start kafka
 
-brew stop services kafka		
+brew services stop kafka		
 ```
 
 
@@ -124,9 +124,9 @@ brew install zookeeper
 ##### zoo command
 
 ```sh
-brew start services zookeeper
+brew services start zookeeper
 
-brew stop services zookeeper
+brew services stop zookeeper	
 
 ## check zookeeper status
 $ zkSever status
