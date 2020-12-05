@@ -86,7 +86,7 @@ public class PlanController {
         logger.info("CREATING NEW DATA: key - " + internalKey + ": " + newPlan.toString());
         planService.savePlan(internalKey, newPlan);
 
-
+        // TODO leichenzhou - 12/4/20 for single node testing - breaker
 //        kafkaPub.publish("index", newPlan.toString());
 
         // TODO leichenzhou - 12/1/20: test the es post function
@@ -157,7 +157,8 @@ public class PlanController {
         // update plan
         JSONObject patchPlanJson = new JSONObject(patchPlan);
 
-        planService.update(intervalKey, patchPlanJson);
+        planService.savePlan(intervalKey, patchPlanJson);
+//        planService.update(intervalKey, patchPlanJson);
         logger.info("PATCH PLAN : " + intervalKey + " updates successfully");
 
         String message = MessageUtil.build(MessageEnum.PATCH_SUCCESS);
