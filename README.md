@@ -4,7 +4,7 @@
 
 ![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v2.0-passing-bri)
 
-
+![NEU INFO7255 - BigData&Indexinbg](https://img.shields.io/badge/info7255--v3.0-passing-bri)
 
 ### [Final System Architecture Diagram](diagram.png)
 
@@ -29,7 +29,26 @@ For this course, I developed the backend REST API, by utilizing
 - **Kafka**
 - **Zookeeper**
 
+### Introduction
 
+This project contains two services, which integrated Kafka to decouple restapi service and elastic service
+
+- First is producer, the RESTful API service, which can handle the requests from url, persist data in Redis
+- Kafka, the message queue, can receive the message from producer and consumer can retrieve message and excute
+- Second is consumer, which is mainly responsible for the elastic search side
+
+### How to Use
+
+1. start the services, including redis, elastic search, kibana, zookeeper, kafka;
+2. start the SpringBoot applitions, the restful api service and elastic search ops service;
+3. test the work flow, through Postman and Kibana Dev Tools
+   1. Postman
+      - E-tag test
+      - Token test, choose Auth 2.0 and send request to Google Token Server; then, use the id_token to replace the evn var {google-id_token}
+      - CRUD/ GET/ POST/ PATCH/ PUT/ DELETE
+   2. Elastic Search/ Kibana
+      - CRUD
+      - Get object with specific conditions
 
 ### Tools
 
