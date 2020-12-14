@@ -45,10 +45,12 @@ This project contains two services, which integrated Kafka to decouple restapi s
    1. Postman
       - E-tag test
       - Token test, choose Auth 2.0 and send request to Google Token Server; then, use the id_token to replace the evn var {google-id_token}
-      - CRUD/ GET/ POST/ PATCH/ PUT/ DELETE
+      - CRUD/ GET/ POST/ PATCH/ PUT/ DELETE 
    2. Elastic Search/ Kibana
       - CRUD
       - Get object with specific conditions
+
+**** Run the [start.sh](start.sh) to start all the necessary services
 
 ### Tools
 
