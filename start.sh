@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### info 7255 script
+### info 7255 script ###
 
 # start the redis-server
 redis-server &
